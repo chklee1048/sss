@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring.xsd">
+    <!-- bean definitions here 빈이라는 태그 생성자 호출 -> 빈이라는 태그 안에서 -> 프로퍼티 태그를 
+        생성하면 setter 됨 -> jsp2의 HikariDataSourceUtil 내용과 비교. -> bean이란 생성된 객체 -->
+    <!-- HikariConfig config = new HikariConfig(); -->
+    <bean id="hikariConfig" class="com.zaxxer.hikari.HikariConfig">
+        <!-- hikariConfig.setDriverClassName("...") 메서드 호출 -->
+        <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"></property>
+        <property name="jdbcUrl" value="jdbc:oracle:thin:@localhost:1521:xe"></property>
+        <property name="username" value="scott"></property>
+        <property name="password" value="tiger"></property>
+    </bean>
+    <!-- HikariDataSource dataSource = new HikariDataSource(hikariConfig); -->
+    <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+        <constructor-arg ref="hikariConfig" />
+    </bean>
+
+    <!-- SqlSessionFactoryBean 객체: Data Source(Connection Pool)을 이용해서 SQL 문장들을 실행하고 결과 처리를 수행하는 객체 :: DAO? -->
+    <!-- ref는 아규먼트 전달:id=dataSource로 감 그건 HikariDataSource 그러니까 이걸로 org.mybatis.spring.SqlSessionFactoryBean 만든다는 거 -->
+    <!-- 쿼리문 스테이트 먼트에 넣고, 셋하고 , exucute 하는거 해줌.  -->
+    <bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="mapperLocations" value="classpath:/mappers/**/*.xml" />
+    </bean>
+    <!-- value는 문자열로 아규먼트 보냄 --> 
+    
+    <!-- 마이바티스 프레임워크에서 생성하고 관리하는 빈들을 베이스패키지와 그 하위 패키지에서 검색함 -->
+    <mybatis:scan base-package="com.itwill.spring2.repository"/>
+    
+    <!-- 서비스 어노테이션이 설정된 객체들을 생성하고 관리 -->
+    <context:component-scan base-package="com.itwill.spring2.service" />
+ 
+</beans>
